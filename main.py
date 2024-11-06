@@ -42,12 +42,12 @@ def capture_photo():
             with io.BytesIO() as output:
                 img.save(output, format="PNG")
                 img_blob = output.getvalue()
-            messagebox.showinfo("Photo Capture", "Photo captured")
+            messagebox.showinfo("Captura de Foto", "Foto capturada")
             cam.release()
             cv2.destroyAllWindows()
-            root.quit()  # Use quit instead of destroy to properly exit the mainloop
+            root.quit()  # Use quit em vez de destroy para sair corretamente do mainloop
         else:
-            messagebox.showerror("Error", "Failed to grab frame")
+            messagebox.showerror("Erro", "Falha ao capturar a imagem")
 
     def show_frame():
         if not cam.isOpened() or not root.winfo_exists():
@@ -57,14 +57,15 @@ def capture_photo():
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
             img = Image.fromarray(cv2image)
             imgtk = ImageTk.PhotoImage(image=img)
-            lmain.imgtk = imgtk  # Keep a reference to avoid garbage collection
+            lmain.imgtk = imgtk  # Mantenha uma referência para evitar a coleta de lixo
             lmain.configure(image=imgtk)
         if root.winfo_exists():
             lmain.after(10, show_frame)
 
     cam = cv2.VideoCapture(0)
     root = tk.Tk()
-    root.title("Photo Capture")
+    root.title("Captura de Foto")
+    root.attributes("-topmost", True)  # Certifique-se de que a janela abra em foco e permaneça no topo
 
     frame = tk.Frame(root)
     frame.pack()
@@ -72,14 +73,14 @@ def capture_photo():
     lmain = tk.Label(frame)
     lmain.pack()
 
-    capture_button = tk.Button(frame, text="Capture Photo", command=take_photo)
+    capture_button = tk.Button(frame, text="Capturar Foto", command=take_photo)
     capture_button.pack()
 
     show_frame()
     root.mainloop()
     cam.release()
     cv2.destroyAllWindows()
-    root.destroy()  # Ensure the Tkinter window is properly destroyed
+    root.destroy()  # Certifique-se de que a janela Tkinter seja destruída corretamente
     return img_blob
 
 class Employee:
@@ -92,14 +93,14 @@ class Employee:
         now = datetime.datetime.now()
         today_records = [record for record in self.records if record.date() == now.date()]
         if len(today_records) >= 4:
-            messagebox.showwarning("Limit Reached", "You have already made 4 records today.")
+            messagebox.showwarning("Limite Atingido", "Você já fez 4 registros hoje.")
             return
 
         self.records.append(now)
         photo_blob = capture_photo()
         insert_record(self.name, self.pin, now, photo_blob)
         self.analyze_records()
-        time.sleep(1)  # Wait for 1 second before asking for the next PIN
+        time.sleep(1)  # Aguarde 1 segundo antes de pedir o próximo PIN
 
     def analyze_records(self):
         if len(self.records) == 2:
@@ -129,7 +130,7 @@ def main():
         if pin in employees:
             employee = employees[pin]
             threading.Thread(target=employee.clock_in).start()
-            time.sleep(3)  # Wait for 3 seconds before asking for the PIN again
+            time.sleep(3)  # Aguarde 3 segundos antes de pedir o PIN novamente
         else:
             pass
 
