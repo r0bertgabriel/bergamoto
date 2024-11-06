@@ -16,15 +16,18 @@ def create_table():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT,
                   pin TEXT,
-                  timestamp TEXT,
+                  date TEXT,
+                  time TEXT,
                   photo BLOB)''')
     conn.commit()
     conn.close()
 
 def insert_record(name, pin, timestamp, photo_blob):
+    date = timestamp.strftime("%d-%m-%Y")
+    time = timestamp.strftime("%H:%M:00")
     conn = sqlite3.connect('horarios.db')
     c = conn.cursor()
-    c.execute("INSERT INTO horarios (name, pin, timestamp, photo) VALUES (?, ?, ?, ?)", (name, pin, timestamp.isoformat(), photo_blob))
+    c.execute("INSERT INTO horarios (name, pin, date, time, photo) VALUES (?, ?, ?, ?, ?)", (name, pin, date, time, photo_blob))
     conn.commit()
     conn.close()
 
@@ -39,13 +42,11 @@ def capture_photo():
             with io.BytesIO() as output:
                 img.save(output, format="PNG")
                 img_blob = output.getvalue()
-            # print("Photo captured")
             messagebox.showinfo("Photo Capture", "Photo captured")
             cam.release()
             cv2.destroyAllWindows()
             root.quit()  # Use quit instead of destroy to properly exit the mainloop
         else:
-            # print("Failed to grab frame")
             messagebox.showerror("Error", "Failed to grab frame")
 
     def show_frame():
@@ -89,26 +90,26 @@ class Employee:
 
     def clock_in(self):
         now = datetime.datetime.now()
+        today_records = [record for record in self.records if record.date() == now.date()]
+        if len(today_records) >= 4:
+            messagebox.showwarning("Limit Reached", "You have already made 4 records today.")
+            return
+
         self.records.append(now)
         photo_blob = capture_photo()
         insert_record(self.name, self.pin, now, photo_blob)
-        # print(f"{self.name} registrou entrada às {now}")
         self.analyze_records()
         time.sleep(1)  # Wait for 1 second before asking for the next PIN
 
     def analyze_records(self):
         if len(self.records) == 2:
             pass
-            # print(f"{self.name} registrou entrada e saída para o dia.")
         elif len(self.records) == 3:
             pass
-            # print(f"{self.name} registrou entrada, saída para o almoço e retorno.")
         elif len(self.records) == 4:
             pass
-            # print(f"{self.name} completou todos os registros de entrada para o dia.")
         else:
             pass
-            # print(f"{self.name} tem um registro incompleto para o dia.")
 
 def main():
     create_table()
@@ -119,7 +120,6 @@ def main():
     }
 
     def signal_handler():
-        # print("Encerrando o programa...")
         exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -131,7 +131,6 @@ def main():
             threading.Thread(target=employee.clock_in).start()
             time.sleep(3)  # Wait for 3 seconds before asking for the PIN again
         else:
-            # print("PIN inválido. Tente novamente.")
             pass
 
 if __name__ == "__main__":
