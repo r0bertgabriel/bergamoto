@@ -12,7 +12,7 @@ import csv
 import os
 
 def create_table():
-    db_path = os.path.join('/home/br4b0/Desktop/novo_lar/bergamoto/data', 'horarios.db')
+    db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS horarios
@@ -28,7 +28,7 @@ def create_table():
 def insert_record(name, pin, timestamp, photo_blob):
     date = timestamp.strftime("%d-%m-%Y")
     time = timestamp.strftime("%H:%M:00")
-    db_path = os.path.join('/home/br4b0/Desktop/novo_lar/bergamoto/data', 'horarios.db')
+    db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("INSERT INTO horarios (name, pin, date, time, photo) VALUES (?, ?, ?, ?, ?)", (name, pin, date, time, photo_blob))
@@ -120,7 +120,7 @@ def main():
     create_table()
     employees = {}
 
-    with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='r') as file:
+    with open('C:\\bergamoto\\data\\people.csv', mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             pin = row['pin']
