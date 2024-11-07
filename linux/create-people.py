@@ -1,21 +1,19 @@
-import random
-import string
 import csv
 import os
+import random
 
 first_names = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena", "Igor", "Juliana"]
 last_names = ["Silva", "Santos", "Oliveira", "Pereira", "Costa", "Almeida", "Ribeiro", "Martins", "Barbosa", "Rocha"]
 departments = ["Recursos Humanos", "Finanças", "Engenharia", "Marketing", "Vendas"]
 supervisors = ["Supervisor A", "Supervisor B", "Supervisor C", "Supervisor D", "Supervisor E"]
 
-used_codes = set()
+current_code = 0
 
 def generate_unique_code():
-    while True:
-        code = ''.join(random.choices(string.digits, k=4))
-        if code not in used_codes:
-            used_codes.add(code)
-            return code
+    global current_code
+    code = f"{current_code:04d}"
+    current_code += 1
+    return code
 
 def generate_person():
     first_name = random.choice(first_names)
@@ -32,7 +30,7 @@ if __name__ == "__main__":
     with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["name", "pin", "setor", "supervisor"])
-        for _ in range(50):
+        for _ in range(200):
             person = generate_person().split(", ")
             name = person[0]
             code = person[1].split(": ")[1]

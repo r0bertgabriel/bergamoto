@@ -13,6 +13,8 @@ import os
 
 def create_table():
     db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
+    if not os.path.exists('C:\\bergamoto\\data'):
+        os.makedirs('C:\\bergamoto\\data')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS horarios
@@ -120,7 +122,12 @@ def main():
     create_table()
     employees = {}
 
-    with open('C:\\bergamoto\\data\\people.csv', mode='r') as file:
+    csv_path = 'C:\\bergamoto\\data\\people.csv'
+    if not os.path.exists(csv_path):
+        print(f"Arquivo {csv_path} não encontrado.")
+        return
+
+    with open(csv_path, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             pin = row['pin']
