@@ -11,6 +11,8 @@ import threading
 import csv
 import os
 
+photo_window_open = False
+
 def create_table():
     db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
     if not os.path.exists('C:\\bergamoto\\data'):
@@ -35,12 +37,24 @@ def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
     db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
+    
+    # Check the number of records for the user on the current date
+    c.execute("SELECT COUNT(*) FROM horarios WHERE pin = ? AND date = ?", (pin, date))
+    record_count = c.fetchone()[0]
+    
+    if record_count >= 4:
+        messagebox.showwarning("Limite Atingido", "Você já fez 4 registros hoje.")
+        conn.close()
+        return False
+
     c.execute("INSERT INTO horarios (name, pin, date, time, photo, setor, supervisor) VALUES (?, ?, ?, ?, ?, ?, ?)", 
               (name, pin, date, time, photo_blob, setor, supervisor))
     conn.commit()
     conn.close()
+    return True
 
 def capture_photo():
+    global photo_window_open
     img_blob = None
 
     def take_photo():
@@ -85,11 +99,13 @@ def capture_photo():
     capture_button = tk.Button(frame, text="Capturar Foto", command=take_photo)
     capture_button.pack()
 
+    photo_window_open = True
     show_frame()
     root.mainloop()
     cam.release()
     cv2.destroyAllWindows()
     root.destroy()
+    photo_window_open = False
     return img_blob
 
 class Employee:
@@ -102,16 +118,12 @@ class Employee:
 
     def clock_in(self):
         now = datetime.datetime.now()
-        today_records = [record for record in self.records if record.date() == now.date()]
-        if len(today_records) >= 4:
-            messagebox.showwarning("Limite Atingido", "Você já fez 4 registros hoje.")
-            return
-
-        self.records.append(now)
         photo_blob = capture_photo()
-        insert_record(self.name, self.pin, now, photo_blob, self.setor, self.supervisor)
-        self.analyze_records()
-        time.sleep(1)
+        if photo_blob:
+            if insert_record(self.name, self.pin, now, photo_blob, self.setor, self.supervisor):
+                self.records.append(now)
+                self.analyze_records()
+                time.sleep(1)
 
     def analyze_records(self):
         if len(self.records) == 2:
@@ -146,21 +158,85 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
+    def get_pin():
+        global photo_window_open
+        pin = None
+
+        def submit_pin():
+            nonlocal pin
+            pin = pin_entry.get().strip()
+            root.quit()
+
+        while photo_window_open:
+            time.sleep(1)
+
+        root = tk.Tk()
+        root.title("Entrada de PIN")
+        root.geometry("400x200")
+        root.attributes("-topmost", True)
+
+        frame = tk.Frame(root)
+        frame.pack(expand=True)
+
+        label = tk.Label(frame, text="Digite seu PIN:", font=("Helvetica", 16))
+        label.pack(pady=10)
+
+        pin_entry = tk.Entry(frame, font=("Helvetica", 16), justify='center')
+        pin_entry.pack(pady=10)
+
+        submit_button = tk.Button(frame, text="Enviar", command=submit_pin, font=("Helvetica", 16))
+        submit_button.pack(pady=10)
+
+        root.mainloop()
+        root.destroy()
+        return pin
+
+    def confirm_employee(employee):
+        confirmed = False
+
+        def confirm():
+            nonlocal confirmed
+            confirmed = True
+            root.quit()
+
+        def cancel():
+            root.quit()
+
+        root = tk.Tk()
+        root.title("Confirmação de Funcionário")
+        root.geometry("400x200")
+        root.attributes("-topmost", True)
+
+        frame = tk.Frame(root)
+        frame.pack(expand=True)
+
+        label = tk.Label(frame, text=f"Nome: {employee.name}, Setor: {employee.setor}. É você?", font=("Helvetica", 16))
+        label.pack(pady=10)
+
+        confirm_button = tk.Button(frame, text="Sim", command=confirm, font=("Helvetica", 16))
+        confirm_button.pack(side=tk.LEFT, padx=20, pady=10)
+
+        cancel_button = tk.Button(frame, text="Não", command=cancel, font=("Helvetica", 16))
+        cancel_button.pack(side=tk.RIGHT, padx=20, pady=10)
+
+        root.mainloop()
+        root.destroy()
+        return confirmed
+
     while True:
-        pin = input("Digite seu PIN: ").strip()
+        pin = get_pin()
         if pin == '----':
             print("Encerrando o programa.")
             break
         if pin in employees:
             employee = employees[pin]
-            confirmation = input(f"Nome: {employee.name}, Setor: {employee.setor}. É você? (s/n): ").strip().lower()
-            if confirmation == 's':
+            if confirm_employee(employee):
                 threading.Thread(target=employee.clock_in).start()
                 time.sleep(3)
             else:
-                print("PIN incorreto. Tente novamente.")
+                messagebox.showerror("Erro", "Confirmação falhou. Tente novamente.")
         else:
-            print("PIN incorreto. Tente novamente.")
+            messagebox.showerror("Erro", "PIN incorreto. Tente novamente.")
 
 if __name__ == "__main__":
     main()
