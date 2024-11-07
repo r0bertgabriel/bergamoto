@@ -2,6 +2,7 @@ import random
 import string
 import csv
 import os
+import sqlite3
 
 first_names = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena", "Igor", "Juliana"]
 last_names = ["Silva", "Santos", "Oliveira", "Pereira", "Costa", "Almeida", "Ribeiro", "Martins", "Barbosa", "Rocha"]
@@ -31,10 +32,36 @@ if __name__ == "__main__":
     with open('C:/bergamoto/data/people.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["name", "pin", "setor", "supervisor"])
-        for _ in range(200):  # Alterado de 50 para 200
+        people = []
+        for _ in range(200):
             person = generate_person().split(", ")
             name = person[0]
             code = person[1].split(": ")[1]
             department = person[2].split(": ")[1]
             supervisor = person[3].split(": ")[1]
             writer.writerow([name, code, department, supervisor])
+            people.append((name, code, department, supervisor))
+    
+    # Connect to the database (it will be created if it doesn't exist)
+    conn = sqlite3.connect('C:/bergamoto/data/bergamoto.db')
+    cursor = conn.cursor()
+
+    # Create the table if it doesn't exist
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS people (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        pin TEXT NOT NULL,
+        setor TEXT NOT NULL,
+        supervisor TEXT NOT NULL
+    )
+    ''')
+
+    # Insert data into the table
+    cursor.executemany('''
+    INSERT INTO people (name, pin, setor, supervisor) VALUES (?, ?, ?, ?)
+    ''', people)
+
+    # Commit the transaction and close the connection
+    conn.commit()
+    conn.close()

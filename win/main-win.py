@@ -16,7 +16,7 @@ photo_window_open = False
 lock = threading.Lock()
 
 def create_table():
-    db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
+    db_path = os.path.join('C:\\bergamoto\\data', 'bergamoto.db')
     if not os.path.exists('C:\\bergamoto\\data'):
         os.makedirs('C:\\bergamoto\\data')
     conn = sqlite3.connect(db_path)
@@ -36,7 +36,7 @@ def create_table():
 def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
     date = timestamp.strftime("%d-%m-%Y")
     time = timestamp.strftime("%H:%M:00")
-    db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
+    db_path = os.path.join('C:\\bergamoto\\data', 'bergamoto.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     
@@ -45,7 +45,7 @@ def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
     record_count = c.fetchone()[0]
     
     if record_count >= 4:
-        messagebox.showwarning("Limite Atingido", "Você já fez 4 registros hoje.".encode('utf-8'))
+        messagebox.showwarning("Limite Atingido".encode('utf-8'), "Você já fez 4 registros hoje.".encode('utf-8'))
         conn.close()
         return False
 
@@ -67,12 +67,12 @@ def capture_photo():
             with io.BytesIO() as output:
                 img.save(output, format="PNG")
                 img_blob = output.getvalue()
-            messagebox.showinfo("Captura de Foto", "Foto capturada".encode('utf-8'))
+            messagebox.showinfo("Captura de Foto".encode('utf-8'), "Foto capturada".encode('utf-8'))
             cam.release()
             cv2.destroyAllWindows()
             root.quit()
         else:
-            messagebox.showerror("Erro", "Falha ao capturar a imagem".encode('utf-8'))
+            messagebox.showerror("Erro".encode('utf-8'), "Falha ao capturar a imagem".encode('utf-8'))
 
     def show_frame():
         if not cam.isOpened() or not root.winfo_exists():
@@ -153,7 +153,7 @@ def main():
 
     csv_path = 'C:\\bergamoto\\data\\people.csv'
     if not os.path.exists(csv_path):
-        print(f"Arquivo {csv_path} não encontrado.")
+        print(f"Arquivo {csv_path} não encontrado.".encode('utf-8'))
         return
 
     with open(csv_path, mode='r') as file:
@@ -168,13 +168,13 @@ def main():
     def signal_handler():
         exit(0)
 
-    signal.signal(signal.SIGINT, lambda *args: signal_handler())
+    signal.signal(signal.SIGINT, signal_handler)
 
     def get_pin():
         global photo_window_open
         pin = None
 
-        def submit_pin(event=None):
+        def submit_pin():
             nonlocal pin
             pin = pin_entry.get().strip()
             root.quit()
@@ -194,17 +194,17 @@ def main():
             frame = ttk.Frame(root, padding="10")
             frame.pack(expand=True, fill=tk.BOTH)
 
-            label = ttk.Label(frame, text="Digite seu PIN:", font=("Helvetica", 16))
+            label = ttk.Label(frame, text="Digite seu PIN:".encode('utf-8'), font=("Helvetica", 16))
             label.pack(pady=10)
 
             pin_entry = ttk.Entry(frame, font=("Helvetica", 16), justify='center')
             pin_entry.pack(pady=10)
             pin_entry.focus_set()  # Set focus to the entry widget
 
-            submit_button = ttk.Button(frame, text="Enviar", command=submit_pin)
+            submit_button = ttk.Button(frame, text="Enviar".encode('utf-8'), command=submit_pin)
             submit_button.pack(pady=10)
 
-            root.bind('<Return>', submit_pin)  # Bind Enter key to submit_pin function
+            root.bind('<Return>', lambda event: submit_pin())  # Bind Enter key to submit_pin function
 
             root.mainloop()
             root.destroy()
@@ -213,7 +213,7 @@ def main():
     def confirm_employee(employee):
         confirmed = False
 
-        def confirm(event=None):
+        def confirm():
             nonlocal confirmed
             confirmed = True
             root.quit()
@@ -233,20 +233,20 @@ def main():
             frame = ttk.Frame(root, padding="10")
             frame.pack(expand=True, fill=tk.BOTH)
 
-            label = ttk.Label(frame, text=f"Nome: {employee.name}, Setor: {employee.setor}. É você?", font=("Helvetica", 16))
+            label = ttk.Label(frame, text=f"Nome: {employee.name}, Setor: {employee.setor}. É você?".encode('utf-8'), font=("Helvetica", 16))
             label.pack(pady=10)
 
             button_frame = ttk.Frame(frame)
             button_frame.pack(pady=10)
 
-            confirm_button = ttk.Button(button_frame, text="Sim", command=confirm)
+            confirm_button = ttk.Button(button_frame, text="Sim".encode('utf-8'), command=confirm)
             confirm_button.pack(side=tk.LEFT, padx=20)
 
-            cancel_button = ttk.Button(button_frame, text="Não", command=cancel)
+            cancel_button = ttk.Button(button_frame, text="Não".encode('utf-8'), command=cancel)
             cancel_button.pack(side=tk.RIGHT, padx=20)
 
-            root.bind('<Return>', confirm)  # Bind Enter key to confirm function
-            confirm_button.bind('<Return>', confirm)  # Ensure Enter key works on confirm button
+            root.bind('<Return>', lambda event: confirm())  # Bind Enter key to confirm function
+            confirm_button.bind('<Return>', lambda event: confirm())  # Ensure Enter key works on confirm button
 
             root.mainloop()
             root.destroy()
@@ -255,18 +255,17 @@ def main():
     while True:
         pin = get_pin()
         if pin == '----':
-            print("Encerrando o programa.")
+            print("Encerrando o programa.".encode('utf-8'))
             break
         if pin in employees:
             employee = employees[pin]
             if confirm_employee(employee):
-                threading.Thread(target=employee.clock_in).start()
+                employee.clock_in()
                 time.sleep(5)  # Wait for the photo capture and record insertion to complete
             else:
-                messagebox.showerror("Erro", "Confirmação falhou. Tente novamente.".encode('utf-8'))
+                messagebox.showerror("Erro".encode('utf-8'), "Confirmação falhou. Tente novamente.".encode('utf-8'))
         else:
-            messagebox.showerror("Erro", "PIN incorreto. Tente novamente.".encode('utf-8'))
+            messagebox.showerror("Erro".encode('utf-8'), "PIN incorreto. Tente novamente.".encode('utf-8'))
 
 if __name__ == "__main__":
     main()
-    
