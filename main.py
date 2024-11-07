@@ -22,7 +22,6 @@ def create_table():
                   date TEXT,
                   time TEXT,
                   photo BLOB)''')
-# PIN TEXT  permite 0 a esquerda
     conn.commit()
     conn.close()
 
@@ -50,7 +49,7 @@ def capture_photo():
             messagebox.showinfo("Captura de Foto", "Foto capturada")
             cam.release()
             cv2.destroyAllWindows()
-            root.quit()  # Use quit em vez de destroy para sair corretamente do mainloop
+            root.quit()
         else:
             messagebox.showerror("Erro", "Falha ao capturar a imagem")
 
@@ -62,7 +61,7 @@ def capture_photo():
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
             img = Image.fromarray(cv2image)
             imgtk = ImageTk.PhotoImage(image=img)
-            lmain.imgtk = imgtk  # Mantenha uma referência para evitar a coleta de lixo
+            lmain.imgtk = imgtk
             lmain.configure(image=imgtk)
         if root.winfo_exists():
             lmain.after(10, show_frame)
@@ -70,7 +69,7 @@ def capture_photo():
     cam = cv2.VideoCapture(0)
     root = tk.Tk()
     root.title("Captura de Foto")
-    root.attributes("-topmost", True)  # Certifique-se de que a janela abra em foco e permaneça no topo
+    root.attributes("-topmost", True)
 
     frame = tk.Frame(root)
     frame.pack()
@@ -85,7 +84,7 @@ def capture_photo():
     root.mainloop()
     cam.release()
     cv2.destroyAllWindows()
-    root.destroy()  # Certifique-se de que a janela Tkinter seja destruída corretamente
+    root.destroy()
     return img_blob
 
 class Employee:
@@ -105,7 +104,7 @@ class Employee:
         photo_blob = capture_photo()
         insert_record(self.name, self.pin, now, photo_blob)
         self.analyze_records()
-        time.sleep(1)  # Aguarde 1 segundo antes de pedir o próximo PIN
+        time.sleep(1)
 
     def analyze_records(self):
         if len(self.records) == 2:
@@ -138,9 +137,9 @@ def main():
         if pin in employees:
             employee = employees[pin]
             threading.Thread(target=employee.clock_in).start()
-            time.sleep(3)  # Aguarde 3 segundos antes de pedir o PIN novamente
+            time.sleep(3)
         else:
-            pass
+            print("PIN incorreto. Tente novamente.")
 
 if __name__ == "__main__":
     main()

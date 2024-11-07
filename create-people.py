@@ -1,6 +1,7 @@
 import random
 import string
 import csv
+import os
 
 first_names = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena", "Igor", "Juliana"]
 last_names = ["Silva", "Santos", "Oliveira", "Pereira", "Costa", "Almeida", "Ribeiro", "Martins", "Barbosa", "Rocha"]
@@ -25,15 +26,16 @@ def generate_person():
     return f"{first_name} {last_name}, Code: {code}, Department: {department}, Supervisor: {supervisor}"
 
 if __name__ == "__main__":
-    for _ in range(50):
-        print(generate_person())
-        with open('/home/br4b0/Desktop/novo_lar/bergamoto/people.csv', mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["Fname", "Lname", "Code", "Department", "Supervisor"])
-            for _ in range(50):
-                person = generate_person().split(", ")
-                first_name, last_name = person[0].split(" ")
-                code = person[1].split(": ")[1]
-                department = person[2].split(": ")[1]
-                supervisor = person[3].split(": ")[1]
-                writer.writerow([first_name, last_name, code, department, supervisor])
+    # Ensure the data directory exists
+    os.makedirs('/home/br4b0/Desktop/novo_lar/bergamoto/data', exist_ok=True)
+    
+    with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["name", "pin", "setor", "supervisor"])
+        for _ in range(50):
+            person = generate_person().split(", ")
+            name = person[0]
+            code = person[1].split(": ")[1]
+            department = person[2].split(": ")[1]
+            supervisor = person[3].split(": ")[1]
+            writer.writerow([name, code, department, supervisor])
