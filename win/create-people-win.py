@@ -27,9 +27,9 @@ def generate_person():
 
 if __name__ == "__main__":
     # Ensure the data directory exists
-    os.makedirs('C:/bergamoto/data', exist_ok=True)
+    os.makedirs('../data', exist_ok=True)
     
-    with open('C:/bergamoto/data/people.csv', mode='w', newline='') as file:
+    with open('../data/people.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["name", "pin", "setor", "supervisor"])
         for _ in range(50):
