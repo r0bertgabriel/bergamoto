@@ -8,24 +8,29 @@ import signal
 import io
 import time
 import threading
+import csv
+import os
 
 def create_table():
-    conn = sqlite3.connect('horarios.db')
+    db_path = os.path.join('/home/br4b0/Desktop/novo_lar/bergamoto/data', 'horarios.db')
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS horarios
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT,
-                  pin TEXT,
+                  pin TEXT, 
                   date TEXT,
                   time TEXT,
                   photo BLOB)''')
+# PIN TEXT  permite 0 a esquerda
     conn.commit()
     conn.close()
 
 def insert_record(name, pin, timestamp, photo_blob):
     date = timestamp.strftime("%d-%m-%Y")
     time = timestamp.strftime("%H:%M:00")
-    conn = sqlite3.connect('horarios.db')
+    db_path = os.path.join('/home/br4b0/Desktop/novo_lar/bergamoto/data', 'horarios.db')
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute("INSERT INTO horarios (name, pin, date, time, photo) VALUES (?, ?, ?, ?, ?)", (name, pin, date, time, photo_blob))
     conn.commit()
@@ -114,11 +119,14 @@ class Employee:
 
 def main():
     create_table()
-    employees = {
-        "1234": Employee("Alice", "1234"),
-        "5678": Employee("Bob", "5678"),
-        "9101": Employee("Charlie", "9101")
-    }
+    employees = {}
+
+    with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            pin = row['pin']
+            name = row['name']
+            employees[pin] = Employee(name, pin)
 
     def signal_handler():
         exit(0)

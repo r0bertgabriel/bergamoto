@@ -29,7 +29,7 @@ if __name__ == "__main__":
         print(generate_person())
         with open('/home/br4b0/Desktop/novo_lar/bergamoto/people.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["First Name", "Last Name", "Code", "Department", "Supervisor"])
+            writer.writerow(["Fname", "Lname", "Code", "Department", "Supervisor"])
             for _ in range(50):
                 person = generate_person().split(", ")
                 first_name, last_name = person[0].split(" ")
