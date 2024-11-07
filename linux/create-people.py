@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # Ensure the data directory exists
     os.makedirs('/home/br4b0/Desktop/novo_lar/bergamoto/data', exist_ok=True)
     
-    with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='w', newline='') as file:
+    with open('/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(["name", "pin", "setor", "supervisor"])
         for _ in range(50):
