@@ -23,17 +23,20 @@ def create_table():
                   pin TEXT, 
                   date TEXT,
                   time TEXT,
-                  photo BLOB)''')
+                  photo BLOB,
+                  setor TEXT,
+                  supervisor TEXT)''')
     conn.commit()
     conn.close()
 
-def insert_record(name, pin, timestamp, photo_blob):
+def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
     date = timestamp.strftime("%d-%m-%Y")
     time = timestamp.strftime("%H:%M:00")
     db_path = os.path.join('C:\\bergamoto\\data', 'horarios.db')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("INSERT INTO horarios (name, pin, date, time, photo) VALUES (?, ?, ?, ?, ?)", (name, pin, date, time, photo_blob))
+    c.execute("INSERT INTO horarios (name, pin, date, time, photo, setor, supervisor) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+              (name, pin, date, time, photo_blob, setor, supervisor))
     conn.commit()
     conn.close()
 
@@ -90,9 +93,11 @@ def capture_photo():
     return img_blob
 
 class Employee:
-    def __init__(self, name, pin):
+    def __init__(self, name, pin, setor, supervisor):
         self.name = name
         self.pin = pin
+        self.setor = setor
+        self.supervisor = supervisor
         self.records = []
 
     def clock_in(self):
@@ -104,7 +109,7 @@ class Employee:
 
         self.records.append(now)
         photo_blob = capture_photo()
-        insert_record(self.name, self.pin, now, photo_blob)
+        insert_record(self.name, self.pin, now, photo_blob, self.setor, self.supervisor)
         self.analyze_records()
         time.sleep(1)
 
@@ -132,19 +137,28 @@ def main():
         for row in reader:
             pin = row['pin']
             name = row['name']
-            employees[pin] = Employee(name, pin)
+            setor = row['setor']
+            supervisor = row['supervisor']
+            employees[pin] = Employee(name, pin, setor, supervisor)
 
-    def signal_handler():
+    def signal_handler(sig, frame):
         exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
 
     while True:
-        pin = input("Digite seu PIN: ")
+        pin = input("Digite seu PIN: ").strip()
+        if pin == '----':
+            print("Encerrando o programa.")
+            break
         if pin in employees:
             employee = employees[pin]
-            threading.Thread(target=employee.clock_in).start()
-            time.sleep(3)
+            confirmation = input(f"Nome: {employee.name}, Setor: {employee.setor}. É você? (s/n): ").strip().lower()
+            if confirmation == 's':
+                threading.Thread(target=employee.clock_in).start()
+                time.sleep(3)
+            else:
+                print("PIN incorreto. Tente novamente.")
         else:
             print("PIN incorreto. Tente novamente.")
 
