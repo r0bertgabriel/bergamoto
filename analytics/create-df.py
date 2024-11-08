@@ -1,8 +1,9 @@
+#%%
 import sqlite3
 import pandas as pd
 
 # Path to the database
-db_path = 'data/bergamoto.db'
+db_path = '/home/br4b0/Desktop/novo_lar/bergamoto/data/bergamoto.db'
 
 # Connect to the database
 conn = sqlite3.connect(db_path)
@@ -26,14 +27,16 @@ df_horarios = pd.read_sql_query(query, conn)
 # Print the DataFrame
 print(df_horarios)
 
-# Query to select all data from the 'horarios' table
-query = "SELECT * FROM horarios"
-
-# Execute the query and load the data directly into a DataFrame
-df_horarios = pd.read_sql_query(query, conn)
-
-# Print the DataFrame
-print(df_horarios)
-
+#%%
 # Close the connection
 conn.close()
+
+# Exclude the 'photo' column
+df_horarios = df_horarios.drop(columns=['photo'])
+
+# Ensure 'pin' column is treated as text
+df_horarios['pin'] = df_horarios['pin'].astype(str)
+
+# Save the DataFrame to a CSV file with UTF-8 encoding
+csv_path = '/home/br4b0/Desktop/novo_lar/bergamoto/data/horarios-ds.csv'
+df_horarios.to_csv(csv_path, index=False, encoding='utf-8')
