@@ -4,7 +4,6 @@ import pandas as pd
 import os
 
 # Path to the database
-# Path to the database
 db_path = os.path.join('data', 'bergamoto.db')
 
 # Connect to the database
@@ -33,12 +32,13 @@ print(df_horarios)
 # Close the connection
 conn.close()
 
-# Exclude the 'photo' column
-df_horarios = df_horarios.drop(columns=['photo'])
+# Exclude the 'photo' column if it exists
+if 'photo' in df_horarios.columns:
+    df_horarios = df_horarios.drop(columns=['photo'])
 
 # Ensure 'pin' column is treated as text
 df_horarios['pin'] = df_horarios['pin'].astype(str)
 
 # Save the DataFrame to a CSV file with UTF-8 encoding
-csv_path =os.path.join('data', 'horarios-ds.csv')
+csv_path = os.path.join('data', 'horarios-ds.csv')
 df_horarios.to_csv(csv_path, index=False, encoding='utf-8')
