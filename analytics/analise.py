@@ -14,10 +14,23 @@ df['r-almoco'] = None
 df['saida'] = None
 df
 # %%
-df['entrada'] = df.groupby('name').cumcount() == 0
-df['s-almoco'] = df.groupby('name').cumcount() == 1
-df['r-almoco'] = df.groupby('name').cumcount() == 2
-df['saida'] = df.groupby('name').cumcount() == 3
+def mark_times(group):
+    count = group.shape[0]
+    if count == 4:
+        group.loc[group.index[0], 'entrada'] = True
+        group.loc[group.index[1], 's-almoco'] = True
+        group.loc[group.index[2], 'r-almoco'] = True
+        group.loc[group.index[3], 'saida'] = True
+    elif count == 3:
+        group.loc[group.index[0], 'entrada'] = True
+        group.loc[group.index[1], 's-almoco'] = True
+        group.loc[group.index[2], 'r-almoco'] = True
+    elif count == 2:
+        group.loc[group.index[0], 'entrada'] = True
+        group.loc[group.index[1], 'saida'] = True
+    return group
+
+df = df.groupby(['name', 'date'], group_keys=False).apply(mark_times)
 
 df['entrada'] = df['entrada'].astype(bool)
 df['s-almoco'] = df['s-almoco'].astype(bool)
