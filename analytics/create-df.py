@@ -1,9 +1,11 @@
 #%%
 import sqlite3
 import pandas as pd
+import os
 
 # Path to the database
-db_path = '/home/br4b0/Desktop/novo_lar/bergamoto/data/bergamoto.db'
+# Path to the database
+db_path = os.path.join('data', 'bergamoto.db')
 
 # Connect to the database
 conn = sqlite3.connect(db_path)
@@ -38,5 +40,5 @@ df_horarios = df_horarios.drop(columns=['photo'])
 df_horarios['pin'] = df_horarios['pin'].astype(str)
 
 # Save the DataFrame to a CSV file with UTF-8 encoding
-csv_path = '/home/br4b0/Desktop/novo_lar/bergamoto/data/horarios-ds.csv'
+csv_path =os.path.join('data', 'horarios-ds.csv')
 df_horarios.to_csv(csv_path, index=False, encoding='utf-8')
