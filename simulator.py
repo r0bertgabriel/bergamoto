@@ -80,7 +80,7 @@ for days_passed in range(61):  # 61 days from April 1 to May 31
         
         for time in times:
             cursor.execute('''
-            INSERT INTO employees (name, pin, date, time, setor)
+            INSERT INTO horarios (name, pin, date, time, setor)
             VALUES (?, ?, ?, ?, ?)
             ''', (name, pin, date, time, setor))
 

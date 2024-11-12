@@ -36,6 +36,25 @@ df['entrada'] = df['entrada'].astype(bool)
 df['s-almoco'] = df['s-almoco'].astype(bool)
 df['r-almoco'] = df['r-almoco'].astype(bool)
 df['saida'] = df['saida'].astype(bool)
+
+
+
+#%%
 # %%
-df
+usuario_1= df[(df['pin']=='4551') & (df['date']=='01-04-2024')]
+# %%
+usuario_1['time'].sort_values()
+times = usuario_1['time'].sort_values().values
+total_time = 0
+
+for i in range(len(times) - 1, 0, -1):
+    time_diff = pd.to_datetime(times[i]) - pd.to_datetime(times[i - 1])
+    total_time += time_diff.total_seconds()
+
+total_time_hours = total_time // 3600
+total_time_minutes = (total_time % 3600) // 60
+total_time_seconds = total_time % 60
+
+total_time_formatted = f"{int(total_time_hours)}h {int(total_time_minutes)}m {int(total_time_seconds)}s"
+total_time_formatted
 # %%
