@@ -16,11 +16,15 @@ photo_window_open = False
 lock = threading.Lock()
 
 def create_table():
+    # Define o caminho do banco de dados
     db_path = os.path.join('/home/br4b0/Desktop/novo_lar/bergamoto/data', 'bergamoto.db')
+    # Verifica se o diretório do banco de dados existe, se não, cria o diretório
     if not os.path.exists('/home/br4b0/Desktop/novo_lar/bergamoto/data'):
         os.makedirs('/home/br4b0/Desktop/novo_lar/bergamoto/data')
+    # Conecta ao banco de dados
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
+    # Cria a tabela 'horarios' se ela não existir
     c.execute('''CREATE TABLE IF NOT EXISTS horarios
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT,
@@ -40,7 +44,7 @@ def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     
-    # Check the number of records for the user on the current date
+    # Verifica o número de registros para o usuário na data atual
     c.execute("SELECT COUNT(*) FROM horarios WHERE pin = ? AND date = ?", (pin, date))
     record_count = c.fetchone()[0]
     
@@ -49,6 +53,7 @@ def insert_record(name, pin, timestamp, photo_blob, setor, supervisor):
         conn.close()
         return False
 
+    # Insere um novo registro na tabela 'horarios'
     c.execute("INSERT INTO horarios (name, pin, date, time, photo, setor, supervisor) VALUES (?, ?, ?, ?, ?, ?, ?)", 
               (name, pin, date, time, photo_blob, setor, supervisor))
     conn.commit()
@@ -91,7 +96,7 @@ def capture_photo():
     root = ThemedTk(theme="equilux")
     root.title("Captura de Foto")
     root.attributes("-topmost", True)
-    root.attributes("-fullscreen", True)  # Set the window to fullscreen
+    root.attributes("-fullscreen", True)  # Define a janela para tela cheia
 
     style = ttk.Style(root)
     style.theme_use('equilux')
@@ -105,12 +110,12 @@ def capture_photo():
     capture_button = ttk.Button(frame, text="Capturar Foto", command=take_photo)
     capture_button.pack(pady=10)
 
-    root.bind('<Return>', take_photo)  # Bind Enter key to take_photo function
+    root.bind('<Return>', take_photo)  # Vincula a tecla Enter à função take_photo
 
     photo_window_open = True
     show_frame()
     
-    # Automatically take photo after 3 seconds
+    # Tira a foto automaticamente após 3 segundos
     root.after(3000, take_photo)
     
     root.mainloop()
@@ -151,7 +156,7 @@ def main():
     create_table()
     employees = {}
 
-    csv_path = '/home/br4b0/Desktop/novo_lar/bergamoto/data/people.csv'
+    csv_path = 'data/people.csv'
     if not os.path.exists(csv_path):
         print(f"Arquivo {csv_path} não encontrado.".encode('utf-8'))
         return
@@ -186,7 +191,7 @@ def main():
             root = ThemedTk(theme="equilux")
             root.title("Entrada de PIN")
             root.attributes("-topmost", True)
-            root.attributes("-fullscreen", True)  # Set the window to fullscreen
+            root.attributes("-fullscreen", True)  # Define a janela para tela cheia
 
             style = ttk.Style(root)
             style.theme_use('equilux')
@@ -199,12 +204,12 @@ def main():
 
             pin_entry = ttk.Entry(frame, font=("Helvetica", 16), justify='center')
             pin_entry.pack(pady=10)
-            pin_entry.focus_set()  # Set focus to the entry widget
+            pin_entry.focus_set()  # Define o foco para o widget de entrada
 
             submit_button = ttk.Button(frame, text="Enviar".encode('utf-8'), command=submit_pin)
             submit_button.pack(pady=10)
 
-            root.bind('<Return>', lambda event: submit_pin())  # Bind Enter key to submit_pin function
+            root.bind('<Return>', lambda event: submit_pin())  # Vincula a tecla Enter à função submit_pin
 
             root.mainloop()
             root.destroy()
@@ -225,7 +230,7 @@ def main():
             root = ThemedTk(theme="equilux")
             root.title("Confirmação de Funcionário")
             root.attributes("-topmost", True)
-            root.attributes("-fullscreen", True)  # Set the window to fullscreen
+            root.attributes("-fullscreen", True)  # Define a janela para tela cheia
 
             style = ttk.Style(root)
             style.theme_use('equilux')
@@ -245,8 +250,8 @@ def main():
             cancel_button = ttk.Button(button_frame, text="Não".encode('utf-8'), command=cancel)
             cancel_button.pack(side=tk.RIGHT, padx=20)
 
-            root.bind('<Return>', lambda event: confirm())  # Bind Enter key to confirm function
-            confirm_button.bind('<Return>', lambda event: confirm())  # Ensure Enter key works on confirm button
+            root.bind('<Return>', lambda event: confirm())  # Vincula a tecla Enter à função confirm
+            confirm_button.bind('<Return>', lambda event: confirm())  # Garante que a tecla Enter funcione no botão de confirmação
 
             root.mainloop()
             root.destroy()
@@ -261,7 +266,7 @@ def main():
             employee = employees[pin]
             if confirm_employee(employee):
                 employee.clock_in()
-                time.sleep(5)  # Wait for the photo capture and record insertion to complete
+                time.sleep(5)  # Aguarda a captura da foto e a inserção do registro serem concluídas
             else:
                 messagebox.showerror("Erro".encode('utf-8'), "Confirmação falhou. Tente novamente.".encode('utf-8'))
         else:

@@ -3,42 +3,42 @@ import sqlite3
 import pandas as pd
 import os
 
-# Path to the database
+# Caminho para o banco de dados
 db_path = os.path.join('data', 'bergamoto.db')
 
-# Connect to the database
+# Conectar ao banco de dados
 conn = sqlite3.connect(db_path)
 
-# Create a cursor object
+# Criar um objeto cursor
 cursor = conn.cursor()
 
-# Example query
+# Consulta de exemplo
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
-# Fetch and print the results
+# Buscar e imprimir os resultados
 tables = cursor.fetchall()
-print("Tables in the database:", tables)
+print("Tabelas no banco de dados:", tables)
 
-# Query to select all data from the 'horarios' table
+# Consulta para selecionar todos os dados da tabela 'horarios'
 query = "SELECT * FROM horarios"
 
-# Execute the query and load the data directly into a DataFrame
+# Executar a consulta e carregar os dados diretamente em um DataFrame
 df_horarios = pd.read_sql_query(query, conn)
 
-# Print the DataFrame
+# Imprimir o DataFrame
 print(df_horarios)
 
 #%%
-# Close the connection
+# Fechar a conexão
 conn.close()
 
-# Exclude the 'photo' column if it exists
+# Excluir a coluna 'photo' se existir
 if 'photo' in df_horarios.columns:
     df_horarios = df_horarios.drop(columns=['photo'])
 
-# Ensure 'pin' column is treated as text
+# Garantir que a coluna 'pin' seja tratada como texto
 df_horarios['pin'] = df_horarios['pin'].astype(str)
 
-# Save the DataFrame to a CSV file with UTF-8 encoding
+# Salvar o DataFrame em um arquivo CSV com codificação UTF-8
 csv_path = os.path.join('data', 'horarios-ds.csv')
 df_horarios.to_csv(csv_path, index=False, encoding='utf-8')

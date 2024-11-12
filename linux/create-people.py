@@ -1,5 +1,4 @@
 import random
-import string
 import csv
 import os
 import sqlite3
