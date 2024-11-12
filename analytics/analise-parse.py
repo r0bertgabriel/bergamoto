@@ -116,7 +116,7 @@ if (df.groupby(['pin', 'date'])['time'].transform('count') == 4).any():
             total_time_minutes = (total_time % 3600) // 60
             total_time_seconds = total_time % 60
 
-            total_time_formatted = f"{int(total_time_hours)}h {int(total_time_minutes)}m {int(total_time_seconds)}s"
+            total_time_formatted = f"{int(total_time_hours)}:{int(total_time_minutes)}:{int(total_time_seconds)}"
             total_times.append({'pin': pin, 'date': date, 'total_time': total_time_formatted})
 
     df_total_times4 = pd.DataFrame(total_times)
@@ -126,7 +126,7 @@ df_total_times4.to_csv('tempo4-registros.csv', index=False)
 df_total_times4[df_total_times4['pin']=='4551']
 # Plotting the total time worked for pin '4551'
 df_pin_4551 = df_total_times4[df_total_times4['pin'] == '4551']
-df_pin_4551['total_time_hours'] = df_pin_4551['total_time'].apply(lambda x: int(x.split('h')[0]) + int(x.split('h')[1].split('m')[0]) / 60 + int(x.split('m')[1].split('s')[0]) / 3600)
+df_pin_4551['total_time_hours'] = df_pin_4551['total_time'].apply(lambda x: int(x.split(':')[0]) + int(x.split(':')[1].split(':')[0]) / 60 + int(x.split(':')[1].split(':')[0]) / 3600)
 
 plt.figure(figsize=(10, 6))
 plt.plot(df_pin_4551['date'], df_pin_4551['total_time_hours'], marker='o')
