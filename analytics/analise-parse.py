@@ -16,6 +16,20 @@ df['saida'] = None
 
 # %%
 def mark_times(group):
+    """
+    Marca os horários de entrada, saída, saída para almoço e retorno do almoço em um DataFrame de acordo com o número de registros.
+
+    Parâmetros:
+    group (DataFrame): DataFrame contendo os registros de horários.
+
+    Retorna:
+    DataFrame: DataFrame com as colunas 'entrada', 's-almoco', 'r-almoco' e 'saida' marcadas como True conforme o número de registros.
+
+    Regras:
+    - Se houver 4 registros, marca o primeiro como 'entrada', o segundo como 's-almoco', o terceiro como 'r-almoco' e o quarto como 'saida'.
+    - Se houver 3 registros, marca o primeiro como 'entrada', o segundo como 's-almoco' e o terceiro como 'r-almoco'.
+    - Se houver 2 registros, marca o primeiro como 'entrada' e o segundo como 'saida'.
+    """
     count = group.shape[0]
     if count == 4:
         group.loc[group.index[0], 'entrada'] = True
@@ -43,12 +57,12 @@ def generate_user_day_hash(pin, date):
     return hashlib.sha256(hash_input).hexdigest()
 
 def generate_user_month_hash(pin, date):
-    month_year = date[3:]  # Assuming date format is DD-MM-YYYY
+    month_year = date[3:]  # assume o formato de data como DD-MM-YYYY
     hash_input = f"{pin}{month_year}".encode('utf-8')
     return hashlib.sha256(hash_input).hexdigest()
 
 def generate_user_year_hash(pin, date):
-    year = date[6:]  # Assuming date format is DD-MM-YYYY
+    year = date[6:]  # assume o formato de data como DD-MM-YYYY
     hash_input = f"{pin}{year}".encode('utf-8')
     return hashlib.sha256(hash_input).hexdigest()
 
@@ -95,7 +109,7 @@ if (df.groupby(['pin', 'date'])['time'].transform('count') == 4).any():
     df = df.groupby(['pin', 'date'], group_keys=False).apply(calcular_horas_trabalhadas).reset_index(drop=True)
     df['horas_trabalhadas'] = df['horas_trabalhadas'].apply(lambda x: str(x)[7:] if pd.notnull(x) else x)
     print(df[['pin', 'date', 'horas_trabalhadas']].drop_duplicates().head(5))
-    # Create a new DataFrame with the relevant columns
+    # Cria um novo DataFrame com as colunas relevantes
     df_horas_trabalhadas = df[['pin', 'date', 'horas_trabalhadas']].drop_duplicates().reset_index(drop=True)
     df_horas_trabalhadas
 
@@ -124,18 +138,18 @@ if (df.groupby(['pin', 'date'])['time'].transform('count') == 4).any():
 df_total_times4.to_csv('tempo4-registros.csv', index=False)
 #%%
 df_total_times4[df_total_times4['pin']=='4551']
-# Plotting the total time worked for pin '4551'
+# Plotando o tempo total trabalhado para o pin '4551'
 df_pin_4551 = df_total_times4[df_total_times4['pin'] == '4551']
 df_pin_4551['total_time_hours'] = df_pin_4551['total_time'].apply(lambda x: int(x.split(':')[0]) + int(x.split(':')[1].split(':')[0]) / 60 + int(x.split(':')[1].split(':')[0]) / 3600)
 
 plt.figure(figsize=(10, 6))
 plt.plot(df_pin_4551['date'], df_pin_4551['total_time_hours'], marker='o')
-plt.axhline(y=8, color='r', linestyle='--', label='8 hours reference')  # Adding a red reference line at 8 hours
+plt.axhline(y=8, color='r', linestyle='--', label='Referência de 8 horas')  # Adicionando uma linha de referência vermelha em 8 horas
 plt.xlabel('Date')
 plt.ylabel('Total Time Worked (hours)')
 plt.title('Total Time Worked per Day for PIN 4551')
 plt.xticks(rotation=45)
-plt.xticks(ticks=range(0, len(df_pin_4551['date']), 5), labels=df_pin_4551['date'][::5])  # Show every 5th date
+plt.xticks(ticks=range(0, len(df_pin_4551['date']), 5), labels=df_pin_4551['date'][::5])  # Mostrar a cada 5 datas
 plt.grid(True)
 plt.legend()
 plt.show()
