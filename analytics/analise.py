@@ -83,34 +83,63 @@ df_horas_trabalhadas[df_horas_trabalhadas['pin']=='4551']
 
 #%%
 df
-days_with_four_records = df[df['pin'] == '4551'].groupby('date').filter(lambda x: len(x) == 4)['date'].nunique()
-print(f"Number of days with 4 time records for pin 4551: {days_with_four_records}")
+if (df.groupby(['pin', 'date'])['time'].transform('count') == 4).any():
+    df['horas_trabalhadas'] = None
+
+    def calcular_horas_trabalhadas(group):
+        if len(group) == 4:
+            times = pd.to_datetime(group['time'].sort_values(), format='%H:%M:%S')
+            horas_trabalhadas = (times.iloc[1] - times.iloc[0]) + (times.iloc[3] - times.iloc[2])
+            group['horas_trabalhadas'] = horas_trabalhadas
+        return group
+
+    df = df.groupby(['pin', 'date'], group_keys=False).apply(calcular_horas_trabalhadas).reset_index(drop=True)
+    df['horas_trabalhadas'] = df['horas_trabalhadas'].apply(lambda x: str(x)[7:] if pd.notnull(x) else x)
+    print(df[['pin', 'date', 'horas_trabalhadas']].drop_duplicates().head(5))
+    # Create a new DataFrame with the relevant columns
+    df_horas_trabalhadas = df[['pin', 'date', 'horas_trabalhadas']].drop_duplicates().reset_index(drop=True)
+    df_horas_trabalhadas
+
+    total_times = []
+
+    for pin in df['pin'].unique():
+        user_records = df[(df['pin'] == pin) & (df.groupby(['pin', 'date'])['time'].transform('count') == 4)]
+        for date in user_records['date'].unique():
+            usuario = df[(df['pin'] == pin) & (df['date'] == date)]
+            times = usuario['time'].sort_values().values
+            total_time = 0
+
+            for i in range(len(times) - 1, 0, -1):
+                time_diff = pd.to_datetime(times[i]) - pd.to_datetime(times[i - 1])
+                total_time += time_diff.total_seconds()
+
+            total_time_hours = total_time // 3600
+            total_time_minutes = (total_time % 3600) // 60
+            total_time_seconds = total_time % 60
+
+            total_time_formatted = f"{int(total_time_hours)}h {int(total_time_minutes)}m {int(total_time_seconds)}s"
+            total_times.append({'pin': pin, 'date': date, 'total_time': total_time_formatted})
+
+    df_total_times4 = pd.DataFrame(total_times)
+    df_total_times4
+
+#%%
+df_total_times4[df_total_times4['pin']=='4551']
+# Plotting the total time worked for pin '4551'
+df_pin_4551 = df_total_times4[df_total_times4['pin'] == '4551']
+df_pin_4551['total_time_hours'] = df_pin_4551['total_time'].apply(lambda x: int(x.split('h')[0]) + int(x.split('h')[1].split('m')[0]) / 60 + int(x.split('m')[1].split('s')[0]) / 3600)
+
+plt.figure(figsize=(10, 6))
+plt.plot(df_pin_4551['date'], df_pin_4551['total_time_hours'], marker='o')
+plt.axhline(y=8, color='r', linestyle='--', label='8 hours reference')  # Adding a red reference line at 8 hours
+plt.xlabel('Date')
+plt.ylabel('Total Time Worked (hours)')
+plt.title('Total Time Worked per Day for PIN 4551')
+plt.xticks(rotation=45)
+plt.xticks(ticks=range(0, len(df_pin_4551['date']), 5), labels=df_pin_4551['date'][::5])  # Show every 5th date
+plt.grid(True)
+plt.legend()
+plt.show()
 
 
-
-
-
-
-
-
-
-
-
-# %%
-usuario_1= df[(df['pin']=='4551') & (df['date']=='01-04-2024')]
-# %%
-usuario_1['time'].sort_values()
-times = usuario_1['time'].sort_values().values
-total_time = 0
-
-for i in range(len(times) - 1, 0, -1):
-    time_diff = pd.to_datetime(times[i]) - pd.to_datetime(times[i - 1])
-    total_time += time_diff.total_seconds()
-
-total_time_hours = total_time // 3600
-total_time_minutes = (total_time % 3600) // 60
-total_time_seconds = total_time % 60
-
-total_time_formatted = f"{int(total_time_hours)}h {int(total_time_minutes)}m {int(total_time_seconds)}s"
-total_time_formatted
 # %%
