@@ -2,7 +2,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 #%%
-df = pd.read_csv('tempo4-registros.csv', index_col=False, dtype=str, encoding='utf-8')
+df = pd.read_csv('auxiliares/tempo4-registros.csv', index_col=False, dtype=str, encoding='utf-8')
 
 # Check if 'date' column exists
 if 'date' not in df.columns:
