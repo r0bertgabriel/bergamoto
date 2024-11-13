@@ -74,7 +74,7 @@ for days_passed in range(61):  # 61 days from April 1 to May 31
                 generate_time(20, 1)  # 8 PM ± 1 hour
             ]
         else:
-            # Insert 1 to 3 records for the remaining 8% of the days
+            # Inserir de 1 a 3 registros para os 8% restantes dos dias
             num_records = random.randint(1, 3)
             times = sorted([generate_time(8, 1) for _ in range(num_records)])
         
