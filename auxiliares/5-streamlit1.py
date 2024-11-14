@@ -99,7 +99,10 @@ def plot_horarios_faltantes(date, filter_type, filter_value):
 st.title('Análise de registros faltantes')
 
 # Checkbox to select configuration
-option = st.radio('Selecione a opção:', ['Quantidade de pontos batidos', 'Horários de ponto (para faltantes)'])
+option = st.radio('Selecione a opção:', ['Quantidade de pontos batidos', 
+                                         'Horários de ponto (para faltantes)'])
+
+
 nova_config = option == 'Quantidade de pontos batidos'
 horarios_pontos = option == 'Horários de ponto (para faltantes)'
 
