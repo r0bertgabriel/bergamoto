@@ -1,6 +1,7 @@
 #%% USAR NO JUPYTER
 import pandas as pd
 import sqlite3
+# import seaborn as sns
 import matplotlib.pyplot as plt
 #%%
 db_path = '/home/br4b0/Desktop/foss/DevcolabBR/bergamoto/data/bergamoto.db'
@@ -36,7 +37,7 @@ df_usuarios['key'] = 1
 unique_dates = pd.DataFrame(df['date'].unique(), columns=['date'])
 unique_dates['key'] = 1
 
-# Cria um DataFrame com todas as combinações possíveis de usuários e datas
+# Cria um DataFrame com todas as combinações possíveis de Colaboradores e datas
 all_combinations = pd.merge(df_usuarios, unique_dates, on='key').drop('key', axis=1)
 
 # Faz um merge com o DataFrame original para encontrar as combinações que não existem
@@ -47,13 +48,11 @@ df_faltaram
 #%%
 #ANALISE DAS FALTAS
 
-
-
 # Conta o número de faltas por usuário
 faltas_por_usuario = df_faltaram['pin'].value_counts().reset_index()
 faltas_por_usuario.columns = ['pin', 'faltas']
 
-# Faz o merge para obter os nomes dos usuários
+# Faz o merge para obter os nomes dos Colaboradores
 faltas_por_usuario = faltas_por_usuario.merge(df_usuarios[['pin', 'name']], on='pin')
 
 # Plota o gráfico
@@ -61,7 +60,7 @@ plt.figure(figsize=(10, 6))
 plt.bar(faltas_por_usuario['name'], faltas_por_usuario['faltas'], color='skyblue')
 plt.xlabel('Usuário')
 plt.ylabel('Número de Faltas')
-plt.title('Usuários que Mais Faltaram')
+plt.title('Colaboradores que Mais Faltaram')
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
@@ -71,25 +70,43 @@ plt.show()
 df_faltaram['mes'] = df_faltaram['dia-falta'].dt.month
 faltas_por_usuario_mes = df_faltaram.groupby(['pin', 'mes']).size().reset_index(name='faltas')
 
-# Faz o merge para obter os nomes dos usuários
+# Faz o merge para obter os nomes dos Colaboradores
 faltas_por_usuario_mes = faltas_por_usuario_mes.merge(df_usuarios[['pin', 'name']], on='pin')
 
-# Seleciona os 10 usuários que mais faltaram
+# Seleciona os 10 Colaboradores que mais faltaram
 top_10_faltas = faltas_por_usuario.nlargest(10, 'faltas')['pin']
 faltas_top_10 = faltas_por_usuario_mes[faltas_por_usuario_mes['pin'].isin(top_10_faltas)]
 
-
-# Plota o gráfico de barras empilhadas
-plt.figure(figsize=(12, 8))
+# Exibe o número de faltas de cada usuário por mês
 for pin in top_10_faltas:
     user_data = faltas_top_10[faltas_top_10['pin'] == pin]
-    plt.bar(user_data['mes'], user_data['faltas'], label=user_data['name'].iloc[0])
+    print(f"Usuário: {user_data['name'].iloc[0]}")
+    for mes in user_data['mes'].unique():
+        faltas_mes = user_data[user_data['mes'] == mes]['faltas'].values[0]
+        print(f"  Mês {mes}: {faltas_mes} faltas")
+    print()
 
-plt.xlabel('Mês')
-plt.ylabel('Número de Faltas')
-plt.title('Distribuição das Faltas dos 10 Usuários que Mais Faltaram Durante os Meses do Ano')
-plt.legend()
-plt.grid(True)
+# Plota um gráfico de barras empilhadas para visualizar o número de faltas por mês para os 10 Colaboradores que mais faltaram
+plt.figure(figsize=(12, 8))
+faltas_top_10['mes_nome'] = faltas_top_10['mes'].apply(lambda x: pd.to_datetime(str(x), format='%m').strftime('%b'))
+faltas_pivot = faltas_top_10.pivot(index='name', columns='mes_nome', values='faltas').fillna(0)
+faltas_pivot = faltas_pivot[['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']]
+
+# Ordena os Colaboradores pelo total de faltas no ano
+faltas_pivot['total_faltas'] = faltas_pivot.sum(axis=1)
+faltas_pivot = faltas_pivot.sort_values(by='total_faltas', ascending=False).drop(columns='total_faltas')
+
+ax = faltas_pivot.plot(kind='bar', stacked=True, colormap='tab20', figsize=(12, 8))
+
+# Adiciona os números de faltas dentro das barras
+for container in ax.containers:
+    ax.bar_label(container, label_type='center')
+
+plt.xlabel('Colaboradores')
+plt.ylabel('Número de Faltas totais no mês')
+plt.title('Número de Faltas por Mês para os que Mais Faltaram')
+plt.legend(title='Mês', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
 #%%
