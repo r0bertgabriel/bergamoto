@@ -96,7 +96,7 @@ faltas_pivot = faltas_pivot[['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'A
 faltas_pivot['total_faltas'] = faltas_pivot.sum(axis=1)
 faltas_pivot = faltas_pivot.sort_values(by='total_faltas', ascending=False).drop(columns='total_faltas')
 
-ax = faltas_pivot.plot(kind='bar', stacked=True, colormap='tab20', figsize=(12, 8))
+ax = faltas_pivot.plot(kind='bar', stacked=True, colormap='tab20', figsize=(12, 8), edgecolor='black')
 
 # Adiciona os números de faltas dentro das barras
 for container in ax.containers:
