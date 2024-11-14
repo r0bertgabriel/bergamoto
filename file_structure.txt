@@ -1,0 +1,22 @@
+./
+    ├── .env
+    ├── .gitignore
+    ├── .gitkeep
+    ├── README.md
+    ├── estrutura-project.py
+    └── file_structure.txt
+    auxiliares/
+        ├── 1-simulator.py
+        ├── 2-create-df.py
+        ├── 3-analise-parse.py
+        ├── 4-tempo4-registros.py
+        ├── 5-streamlit1.py
+        ├── 5.1-streamlit2.py
+        ├── pre-analise.py
+        └── trat-horario-falta.py
+    linux/
+        ├── create-people.py
+        └── main.py
+    win/
+        ├── create-people-win.py
+        └── main-win.py
