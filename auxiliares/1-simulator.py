@@ -129,7 +129,8 @@ conn.commit()
 conn.close()
 
 # Verificar e imprimir as datas de feriados
-br_holidays = holidays.Brazil(state='PA', observed=False)
-for date, name in sorted(br_holidays.items()):
-    if date.year == 2024:
-        print(f"Feriado em {date.strftime('%d-%m-%Y')}: {name}")
+feriados_brasil = holidays.Brazil(years=2024, subdiv='PA')
+
+# Exibe todos os feriados de 2024 no Brasil, incluindo os do estado do Pará
+for data, nome in sorted(feriados_brasil.items()):
+    print(f"{data}: {nome}")
