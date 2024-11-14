@@ -1,6 +1,4 @@
 #%% USAR NO JUPYTER
-from math import e
-import re
 import pandas as pd
 import sqlite3
 #%%
@@ -11,21 +9,29 @@ SELECT pin, name, setor, date, time, COUNT(*) OVER (PARTITION BY pin, date) as r
 FROM horarios
 """
 
+
 # %%
 df = pd.read_sql_query(query, conn)
 
-
+# teste
+"""
 df['time'] = pd.to_datetime(df['time'], format='%H:%M:%S').dt.time
 
 entrada = df[(df['registros'] == 1) & (df['time'] >= pd.to_datetime('07:00:00').time()) & 
-             (df['time'] <= pd.to_datetime('11:00:00').time())]
+             (df['time'] <= pd.to_datetime('11:00:00').time())]"""
 
+
+# %% QUEM FALTOU:
+
+df[df['registros']==0]
+
+
+#%%
 
 # Ordena os horários em ordem crescente
 df = df.sort_values(by=['pin', 'date', 'time'])
 
-# Filtra os registros com duas entradas (visualização)
-#%%
+
 registro1 = df[df['registros'] == 1]
 registro1
 #%%
@@ -89,6 +95,7 @@ result = pd.concat([result, pd.DataFrame(rows)], ignore_index=True)
 
 result
 
+#%%
 
 
 

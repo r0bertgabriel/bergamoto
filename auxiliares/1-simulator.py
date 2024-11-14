@@ -2,6 +2,7 @@ import sqlite3
 import random
 import os
 from datetime import datetime, timedelta
+import holidays
 
 # Verificar se o diretório 'data' existe, caso contrário, criar
 if not os.path.exists('data'):
@@ -25,8 +26,8 @@ CREATE TABLE IF NOT EXISTS horarios (
 
 # Função para gerar um nome aleatório
 def generate_name():
-    first_names = ["Alice", "Bob", "Charlie", "David", "Eva"]
-    last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown"]
+    first_names = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Hannah", "Isaac", "Julia"]
+    last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor"]
     return f"{random.choice(first_names)} {random.choice(last_names)}"
 
 # Função para gerar um PIN único
@@ -53,37 +54,82 @@ def generate_setor():
     setores = ["vendas", "ti", "adm", "financeiro"]
     return random.choice(setores)
 
+# Função para verificar se um dia é útil (exclui domingos e feriados comerciais)
+def is_weekday(date):
+    br_holidays = holidays.Brazil(state='PA', observed=False)
+    return date.weekday() < 5 and date not in br_holidays
+
 # Gerar dados para 20 funcionários
 existing_pins = set()
-start_date = datetime(2024, 4, 1)
+start_date = datetime(2024, 1, 1)
 
 # Gerar nomes e PINs para os funcionários
-employees = [(generate_name(), generate_pin(existing_pins), generate_setor()) for _ in range(20)]
+employees = [(generate_name(), generate_pin(existing_pins), generate_setor()) for _ in range(30)]
 
-# Inserir dados por dia
-for days_passed in range(61):  # 61 days from April 1 to May 31
-    date = generate_date(start_date, days_passed)
-    
-    for name, pin, setor in employees:
-        # 92% chance to have 4 records per day
-        if random.random() < 0.92:
-            times = [
-                generate_time(8, 1),  # 8 AM ± 1 hour
-                generate_time(12, 1), # 12 PM ± 1 hour
-                generate_time(14, 1), # 2 PM ± 1 hour
-                generate_time(20, 1)  # 8 PM ± 1 hour
-            ]
-        else:
-            # Inserir de 1 a 3 registros para os 8% restantes dos dias
-            num_records = random.randint(1, 3)
-            times = sorted([generate_time(8, 1) for _ in range(num_records)])
+# Inserir dados para todos os dias úteis de 2024
+current_date = start_date
+while current_date.year == 2024:
+    if is_weekday(current_date):
+        date = current_date.strftime('%d-%m-%Y')
         
-        for time in times:
-            cursor.execute('''
-            INSERT INTO horarios (name, pin, date, time, setor)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (name, pin, date, time, setor))
+        for name, pin, setor in employees:
+            # 20% chance de o funcionário não trabalhar neste dia
+            if random.random() < 0.20:
+                continue
+            
+            # 92% chance de ter 4 registros por dia
+            if random.random() < 0.92:
+                times = [
+                    generate_time(9, 1),  # 9 AM ± 1 hour
+                    generate_time(12, 1), # 12 PM ± 1 hour
+                    generate_time(14, 1), # 2 PM ± 1 hour
+                    generate_time(18, 1)  # 6 PM ± 1 hour
+                ]
+            else:
+                # Inserir de 1 a 3 registros para os 8% restantes dos dias
+                num_records = random.randint(1, 3)
+                times = sorted([generate_time(9, 1) for _ in range(num_records)])
+            
+            for time in times:
+                cursor.execute('''
+                INSERT INTO horarios (name, pin, date, time, setor)
+                VALUES (?, ?, ?, ?, ?)
+                ''', (name, pin, date, time, setor))
+    
+    current_date += timedelta(days=1)
+
+# Criar a tabela de usuários se não existir
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pin TEXT,
+    name TEXT,
+    setor TEXT,
+    creation_date TEXT
+)
+''')
+
+# Função para gerar uma data aleatória dentro do ano de 2024
+def generate_random_date_2024():
+    start_date = datetime(2024, 1, 1)
+    end_date = datetime(2024, 12, 31)
+    random_date = start_date + timedelta(days=random.randint(0, (end_date - start_date).days))
+    return random_date.strftime('%d-%m-%Y')
+
+# Inserir dados na tabela de usuários
+for name, pin, setor in employees:
+    creation_date = generate_random_date_2024()
+    cursor.execute('''
+    INSERT INTO usuarios (pin, name, setor, creation_date)
+    VALUES (?, ?, ?, ?)
+    ''', (pin, name, setor, creation_date))
 
 # Salvar as mudanças e fechar a conexão
 conn.commit()
 conn.close()
+
+# Verificar e imprimir as datas de feriados
+br_holidays = holidays.Brazil(state='PA', observed=False)
+for date, name in sorted(br_holidays.items()):
+    if date.year == 2024:
+        print(f"Feriado em {date.strftime('%d-%m-%Y')}: {name}")
